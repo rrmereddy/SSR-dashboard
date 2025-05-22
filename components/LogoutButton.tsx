@@ -10,10 +10,14 @@ interface LogoutButtonProps {
 }
 
 export default function LogoutButton({ className = "", variant = "default" }: LogoutButtonProps) {
-  const router = useRouter();
+    const router = useRouter();
 
   const handleClick = async () => {
-    await handleLogout(router);
+    const { error } = await handleLogout();
+    if (error) {
+      console.error("Error logging out:", error);
+    }
+    router.push("/auth");
   };
 
   const baseStyles = "flex items-center justify-center gap-2 px-4 py-2 font-semibold rounded-lg transition duration-300 ease-in-out";

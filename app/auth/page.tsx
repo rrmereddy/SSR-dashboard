@@ -18,28 +18,44 @@ export default function Home() {
   const [password, setPassword] = useState("");
   const [isLogin, setIsLogin] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [currentToastId, setCurrentToastId] = useState<string | number | null>(null);
 
   const router = useRouter();
 
   useEffect(() => {
     // Check current session when the component mounts
-    checkSession().then((session) => {
+    const checkUserSession = async () => {
+      const session = await checkSession();
       if (session) {
         router.push('/dashboard');
-      } else {
-        setLoading(false);
       }
-    });
+    };
+    
+    checkUserSession();
 
     // Listen for auth state changes (e.g., after OAuth redirect)
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        if (session) {
+      (event, session) => {
+        if (session && event === 'SIGNED_IN') {
           setErrorMsg("");
-          router.push("/dashboard");
-        } else {
-          setLoading(false);
+          setIsAuthenticating(false);
+          
+          toast.success('Signed in successfully!', {
+            id: currentToastId || undefined
+          });
+          setCurrentToastId(null);
+          setTimeout(() => {
+            router.push("/dashboard");
+          }, 1000);
+        } else if (event === 'SIGNED_OUT') {
+          setIsAuthenticating(false);
+          
+          // Dismiss any existing loading toast
+          if (currentToastId) {
+            toast.dismiss(currentToastId);
+            setCurrentToastId(null);
+          }
         }
       }
     );
@@ -49,29 +65,124 @@ export default function Home() {
         authListener.subscription.unsubscribe();
       }
     };
-  }, [router]);
+  }, [router, currentToastId]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (email.trim() === "" || password.trim() === "") {
-      setErrorMsg("Please fill in all fields");
       toast.error("Please fill in all fields");
       return;
     }
-    
-    if (isLogin) {
-      handleLoginPassword(email, password, setErrorMsg, router);
-    } else {
-      handleSignUp(email, password, setErrorMsg);
+  
+    setIsAuthenticating(true);
+    setErrorMsg("");
+  
+    const toastId = toast.loading(isLogin ? 'Signing in...' : 'Creating account...');
+    setCurrentToastId(toastId);
+  
+    try {
+      if (isLogin) {
+        const { error } = await handleLoginPassword(email, password);
+        
+        if (error) {
+          // immediate cleanup on bad creds
+          toast.dismiss(toastId);
+          setCurrentToastId(null);
+          setIsAuthenticating(false);
+          toast.error(error.message);
+          return;
+        }
+
+      } else {
+        await handleSignUp(email, password, setErrorMsg);
+        
+        if (!errorMsg) {
+          toast.success('Account created successfully! Please check your email for verification.', {
+            id: currentToastId || undefined
+          });
+          setCurrentToastId(null);
+          setIsLogin(true);
+        } else {
+          toast.error(errorMsg);
+        }
+      }
+    } catch {
+      toast.dismiss(toastId);
+      setCurrentToastId(null);
+      setIsAuthenticating(false);
+      toast.error(errorMsg || 'An unexpected error occurred');
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#e8d5b9' }}>
-        <div>Loading...</div>
-      </div>
-    );
-  }
+  const handleGithubLogin = async () => {
+    setIsAuthenticating(true);
+    setErrorMsg("");
+    
+    const githubToastId = toast.loading('Signing in with GitHub...');
+    setCurrentToastId(githubToastId);
+    
+    try {
+      await handleLoginGithub();
+      // The auth state change listener will handle success and dismiss the toast
+      // Only handle errors here with a timeout
+      setTimeout(() => {
+        if (errorMsg) {
+          toast.dismiss(githubToastId);
+          setCurrentToastId(null);
+          toast.error('Failed to sign in with GitHub. Please try again.');
+          setIsAuthenticating(false);
+        }
+      }, 3000); // Wait 3 seconds for OAuth redirect
+    } catch {
+      toast.dismiss(githubToastId);
+      setCurrentToastId(null);
+      toast.error('Failed to sign in with GitHub. Please try again.');
+      setIsAuthenticating(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setIsAuthenticating(true);
+    setErrorMsg("");
+    
+    const googleToastId = toast.loading('Signing in with Google...');
+    setCurrentToastId(googleToastId);
+    
+    try {
+      await handleLoginGoogle();
+      // The auth state change listener will handle success and dismiss the toast
+      // Only handle errors here with a timeout
+      setTimeout(() => {
+        if (errorMsg) {
+          toast.dismiss(googleToastId);
+          setCurrentToastId(null);
+          toast.error('Failed to sign in with Google. Please try again.');
+          setIsAuthenticating(false);
+        }
+      }, 3000); // Wait 3 seconds for OAuth redirect
+    } catch {
+      toast.dismiss(googleToastId);
+      setCurrentToastId(null);
+      toast.error('Failed to sign in with Google. Please try again.');
+      setIsAuthenticating(false);
+    }
+  };
+
+  // if (loading) {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#e8d5b9' }}>
+  //       <div className="p-8 rounded-3xl shadow-2xl w-full max-w-md transform hover:scale-105 transition-transform duration-300 ease-in-out"
+  //         style={{ 
+  //           backgroundColor: '#d9c6a8',
+  //           border: '2px solid #b39f84'
+  //         }}>
+  //         <div className="text-center" style={{ color: '#5c4a32' }}>
+  //           <h2 className="text-2xl font-semibold mb-2">Welcome to Resume Analyzer</h2>
+  //           <p>Please wait while we check your session...</p>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#e8d5b9' }}>
@@ -92,20 +203,6 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Error message */}
-        {errorMsg && (
-          <div 
-            className="border px-4 py-3 rounded-lg mb-6 text-sm text-center animate-pulse"
-            style={{ 
-              backgroundColor: '#f4f1ed',
-              borderColor: '#b39f84',
-              color: '#5c4a32'
-            }}
-          >
-            {errorMsg}
-          </div>
-        )}
-
         {/* Input fields */}
         <div className="space-y-4">
           <div className="relative">
@@ -115,7 +212,8 @@ export default function Home() {
               placeholder="Email Address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 transition duration-200"
+              disabled={isAuthenticating}
+              className="w-full pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ 
                 backgroundColor: '#f4f1ed',
                 border: '1px solid #b39f84',
@@ -131,7 +229,8 @@ export default function Home() {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 transition duration-200"
+              disabled={isAuthenticating}
+              className="w-full pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ 
                 backgroundColor: '#f4f1ed',
                 border: '1px solid #b39f84',
@@ -143,7 +242,8 @@ export default function Home() {
           {/* Submit button */}
           <button
             onClick={handleSubmit}
-            className="w-full flex items-center justify-center gap-2 px-6 py-3 font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition duration-300 ease-in-out transform hover:-translate-y-0.5 hover:opacity-90"
+            disabled={isAuthenticating}
+            className="w-full flex items-center justify-center gap-2 px-6 py-3 font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition duration-300 ease-in-out transform hover:-translate-y-0.5 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             style={{ 
               backgroundColor: '#b39f84',
               color: '#f4f1ed'
@@ -159,7 +259,8 @@ export default function Home() {
               setIsLogin(!isLogin);
               setErrorMsg("");
             }}
-            className="w-full text-sm hover:underline mt-2 transition duration-200"
+            disabled={isAuthenticating}
+            className="w-full text-sm hover:underline mt-2 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ color: '#5c4a32' }}
           >
             {isLogin
@@ -183,8 +284,9 @@ export default function Home() {
         {/* Social Login Buttons */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <button
-            onClick={() => handleLoginGithub(setErrorMsg)}
-            className="w-full flex items-center justify-center gap-2 px-6 py-3 font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition duration-300 ease-in-out transform hover:-translate-y-0.5 hover:opacity-90"
+            onClick={handleGithubLogin}
+            disabled={isAuthenticating}
+            className="w-full flex items-center justify-center gap-2 px-6 py-3 font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition duration-300 ease-in-out transform hover:-translate-y-0.5 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             style={{ 
               backgroundColor: '#5c4a32',
               color: '#f4f1ed'
@@ -198,8 +300,9 @@ export default function Home() {
           </button>
           
           <button
-            onClick={() => handleLoginGoogle(setErrorMsg)}
-            className="w-full flex items-center justify-center gap-2 px-6 py-3 font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition duration-300 ease-in-out transform hover:-translate-y-0.5 hover:opacity-90"
+            onClick={handleGoogleLogin}
+            disabled={isAuthenticating}
+            className="w-full flex items-center justify-center gap-2 px-6 py-3 font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition duration-300 ease-in-out transform hover:-translate-y-0.5 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             style={{ 
               backgroundColor: '#b39f84',
               color: '#f4f1ed'

@@ -1,49 +1,21 @@
 import { supabase } from "@/lib/supabaseclient";
-import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { AuthError } from '@supabase/supabase-js';
 
-export const handleLoginGithub = (setErrorMsg: (msg: string) => void) => {
+export const handleLoginGithub = () => {
   supabase.auth.signInWithOAuth({ provider: "github" });
-  setErrorMsg("");
-  console.log("Initiating GitHub authentication...");
 };
 
-export const handleLoginGoogle = (setErrorMsg: (msg: string) => void) => {
-  supabase.auth.signInWithOAuth({ provider: "google" });
-  setErrorMsg("");
-  console.log("Initiating Google authentication...");
+export const handleLoginGoogle = () => {
+  supabase.auth.signInWithOAuth({ provider: "google" })
 };
 
-export const handleLoginPassword = async (
+export async function handleLoginPassword(
   email: string,
-  password: string,
-  setErrorMsg: (msg: string) => void,
-  router: AppRouterInstance
-) => {
-  try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      if (error.message.includes("Email not confirmed")) {
-        setErrorMsg("Please verify your email address before logging in");
-      } else if (error.message.includes("Invalid login credentials")) {
-        setErrorMsg("Invalid email or password");
-      } else {
-        setErrorMsg(error.message);
-      }
-      return;
-    }
-
-    setErrorMsg("");
-    console.log("Logged in successfully with password", data);
-    router.push("/dashboard");
-  } catch (error) {
-    setErrorMsg("An unexpected error occurred");
-    console.error("Error:", error);
-  }
-};
+  password: string
+): Promise<{ error: AuthError | null }> {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  return { error };
+}
 
 export const handleSignUp = async (
   email: string,
@@ -61,24 +33,20 @@ export const handleSignUp = async (
       return;
     }
 
-    setErrorMsg("Please check your email for verification link");
-    console.log("Signed up successfully", data);
   } catch (error) {
     setErrorMsg("An unexpected error occurred");
     console.error("Error:", error);
   }
 };
 
-export const handleLogout = async (router: AppRouterInstance) => {
+export const handleLogout = async (): Promise<{ error: AuthError | null }> => {
   try {
     const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error("Error logging out:", error);
-      return;
-    }
-    router.push("/auth");
+    return { error: error as AuthError };
+
   } catch (error) {
     console.error("Error during logout:", error);
+    return { error: error as AuthError };
   }
 };
 
