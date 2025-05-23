@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import PDFParser from "pdf-parse";
+import pdfToText from "react-pdftotext";
 
 type Suggestion = {
   id: string;
@@ -45,13 +45,14 @@ const Resume = () => {
 
   const readPDFContent = async (file: File): Promise<string> => {
     try {
-      const arrayBuffer = await file.arrayBuffer();
-      const uint8Array = new Uint8Array(arrayBuffer);
-      const pdfData = await PDFParser(uint8Array);
-      return pdfData.text;
+      const text = await pdfToText(file);
+      if (!text.trim()) {
+        throw new Error("No text content found in PDF");
+      }
+      return text;
     } catch (error) {
       console.error("Error parsing PDF:", error);
-      throw new Error("Failed to parse PDF content");
+      throw new Error("Failed to extract text from PDF. Please try again.");
     }
   };
 
