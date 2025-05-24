@@ -8,6 +8,7 @@ import {
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import type { ParsedContent, Suggestion, Resume, ResumeScore, ResumeContact } from "@/types/resumeTypes";
+import { toast } from "sonner";
 
 const ResumePageClient = () => {
   const [pdfFile, setPdfFile] = useState<File | null>(null);
@@ -49,7 +50,7 @@ const ResumePageClient = () => {
         setCurrentResumeScore(null);
         setSelectedSuggestionId(null);
       } else {
-        setFileError("Please upload a PDF file");
+        toast.error("Please upload a PDF file");
         setPdfFile(null);
       }
     }
@@ -87,7 +88,7 @@ const ResumePageClient = () => {
 
   const triggerResumeAnalysis = async () => {
     if (!pdfFile) {
-      setFileError("Please select a PDF file.");
+      toast.error("Please select a PDF file.");
       return;
     }
     setFileError("");
@@ -116,6 +117,7 @@ const ResumePageClient = () => {
         } else {
           setFileError("Error analyzing PDF.");
         }
+        toast.error(fileError)
       }
     });
   };
@@ -183,7 +185,9 @@ const ResumePageClient = () => {
         pdf.save(`${resume.contact.name || "resume"}.pdf`);
       } catch (error) {
         console.error("Error generating PDF:", error);
-        alert("Error generating PDF. Please try again.");
+        toast.error("Error generating PDF.", {
+          description: error instanceof Error ? error.message : "Unknown error occurred.",
+        });
       }
     }
   };
@@ -202,7 +206,7 @@ const ResumePageClient = () => {
         finalContent = analysisResultText;
     }
     if (!finalContent.trim()) {
-        setFileError("No content to transfer to builder.");
+        toast.error("No content available to transfer.");
         return;
     }
     
@@ -225,6 +229,7 @@ const ResumePageClient = () => {
             } else {
                 setFileError("Error transferring to builder.");
             }
+            toast.error(fileError);
         }
     });
   };
@@ -256,7 +261,7 @@ const ResumePageClient = () => {
     }
     
     if (!contentToScore.trim()){
-        setFileError("No content available to re-score.");
+        toast.error("No content available to re-score.");
         return;
     }
 
@@ -278,6 +283,7 @@ const ResumePageClient = () => {
             } else {
                 setFileError("Error re-analyzing score.");
             }
+            toast.error(fileError);
         }
     });
   };
@@ -286,8 +292,8 @@ const ResumePageClient = () => {
   // The entire return () block below is your JSX.
   // You had this structure already, so I'm just including it within this component.
   return (
-    <div className="flex flex-col min-h-screen bg-white">
-      <nav className="border-b border-neutral-200">
+    <div className="flex flex-col min-h-screen" style={{ backgroundColor: '#e8d5b9' }}>
+      <nav className="border-b" style={{ borderColor: '#D4C5A9', backgroundColor: '#e8d5b9' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex">
@@ -295,10 +301,10 @@ const ResumePageClient = () => {
                 <button
                   key={key}
                   onClick={() => setView(key as "upload" | "analysis" | "builder")}
-                  className={`inline-flex items-center px-4 border-b-2 text-sm font-medium ${
+                  className={`inline-flex items-center px-4 border-b-2 text-sm font-medium transition-all duration-200 ${
                     view === key
-                      ? "border-black text-black"
-                      : "border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300"
+                      ? "text-black border-amber-800"
+                      : "border-transparent text-black hover:text-black hover:border-amber-300"
                   }`}
                 >
                   {label}
@@ -310,44 +316,48 @@ const ResumePageClient = () => {
       </nav>
 
       <div className="flex-1 container mx-auto px-4 py-8">
-        {fileError && <p className="text-red-500 text-center mb-4">{fileError}</p>}
         {view === "upload" ? (
           <div className="flex-1 flex items-center justify-center p-8">
             <div className="w-full max-w-2xl flex flex-col items-center gap-8">
-              <h2 className="text-[32px] font-bold">Resume Builder</h2>
+              <div className="text-center">
+                <h2 className="text-3xl font-bold text-black mb-2">Resume Analyzer</h2>
+                <p className="text-black">Craft your perfect career story with AI</p>
+              </div>
+
               <div className="w-full flex gap-6">
-                <div className="flex-1 border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors">
-                  <h3 className="text-lg font-semibold mb-4">Create New Resume</h3>
+                <div className="flex-1 bg-white/60 backdrop-blur-sm border border-amber-200 rounded-xl p-6 hover:border-amber-300 transition-all duration-200 shadow-sm">
+                  <h3 className="text-lg font-semibold mb-4 text-black">Create New Resume</h3>
                   <button
                     onClick={startFreshBuilder}
-                    className="w-full px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+                    className="w-full px-4 py-3 bg-gradient-to-r from-amber-600 to-amber-700 text-white rounded-lg hover:from-amber-700 hover:to-amber-800 transition-all duration-200 font-medium shadow-sm"
                   >
                     Start Fresh
                   </button>
                 </div>
-                <div className="flex-1 border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors">
-                  <h3 className="text-lg font-semibold mb-4">Import Existing</h3>
-                  <label className="flex flex-col gap-2">
+
+                <div className="flex-1 bg-white/60 backdrop-blur-sm border border-amber-200 rounded-xl p-6 hover:border-amber-300 transition-all duration-200 shadow-sm">
+                  <h3 className="text-lg font-semibold mb-4 text-black">Import Existing</h3>
+                  <label className="flex flex-col gap-3">
                     <input
                       type="file"
                       className="hidden"
                       accept=".pdf"
                       onChange={handleFileChange}
                     />
-                    <div className="w-full px-4 py-2 border border-gray-200 rounded-lg text-center cursor-pointer hover:bg-gray-50">
-                      Choose PDF
+                    <div className="w-full px-4 py-3 border border-amber-200 rounded-lg text-center cursor-pointer hover:bg-amber-50 transition-colors text-black font-medium">
+                      {pdfFile ? pdfFile.name : "Choose PDF"}
                     </div>
                   </label>
                   {pdfFile && (
                     <button
                       onClick={triggerResumeAnalysis}
                       disabled={isProcessingAction}
-                      className="w-full mt-4 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                      className="w-full mt-4 px-4 py-3 bg-gradient-to-r from-amber-600 to-amber-700 text-white rounded-lg hover:from-amber-700 hover:to-amber-800 disabled:from-amber-400 disabled:to-amber-500 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-sm"
                     >
                       {isProcessingAction ? (
                         <div className="flex items-center justify-center">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Processing...
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                          Analyzing...
                         </div>
                       ) : (
                         "Import & Analyze"
@@ -360,29 +370,43 @@ const ResumePageClient = () => {
           </div>
         ) : view === "builder" ? (
           <div className="max-w-7xl mx-auto">
-            <div className="mb-4 flex justify-between">
-              <button
-                onClick={() => setIsPreviewMode(!isPreviewMode)}
-                className="px-4 py-2 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors"
-              >
-                {isPreviewMode ? "Edit Mode" : "Preview Mode"}
-              </button>
+            <div className="mb-6 flex justify-between items-center">
+              <div>
+                 <button
+                    onClick={() => setIsPreviewMode(!isPreviewMode)}
+                    className="px-4 py-2 bg-white/60 border border-amber-200 rounded-lg hover:bg-amber-50 transition-colors text-black font-medium mr-2"
+                  >
+                    {isPreviewMode ? "Edit Mode" : "Preview Mode"}
+                  </button>
+                  <button
+                    onClick={triggerReanalyzeScore}
+                    disabled={isProcessingAction}
+                    className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:bg-amber-300 transition-all duration-200 font-medium shadow-sm"
+                  >
+                    {isProcessingAction && currentResumeScore === null ? (
+                        <div className="flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                          Scoring...
+                        </div>
+                      ) : "AI Re-Score & Review"}
+                  </button>
+              </div>
               <button
                 onClick={exportToPDF}
-                disabled={isProcessingAction} // You might want a different state for PDF export if it's purely client-side and can overlap
-                className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
+                className="px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-700 text-white rounded-lg hover:from-amber-700 hover:to-amber-800 transition-all duration-200 font-medium shadow-sm"
               >
                 Export to PDF
               </button>
             </div>
 
             {isPreviewMode ? (
-              <div ref={resumeRef} className="max-w-4xl mx-auto bg-white shadow-lg min-h-[11in] p-8">
-                <div className="text-center mb-8 border-b-2 border-gray-200 pb-6">
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <div ref={resumeRef} className="max-w-4xl mx-auto bg-white shadow-lg min-h-[11in] p-8 rounded-lg">
+                {/* ... Preview Mode JSX ... (no changes here) */}
+                <div className="text-center mb-8 border-b-2 border-amber-200 pb-6">
+                  <h1 className="text-3xl font-bold text-black mb-2">
                     {resume.contact.name || "Your Name"}
                   </h1>
-                  <div className="flex justify-center items-center space-x-4 text-sm text-gray-600">
+                  <div className="flex justify-center items-center space-x-4 text-sm text-black">
                     {resume.contact.email && <span>{resume.contact.email}</span>}
                     {resume.contact.phone && <span>&bull;</span>}
                     {resume.contact.phone && <span>{resume.contact.phone}</span>}
@@ -393,21 +417,21 @@ const ResumePageClient = () => {
                 <div className="space-y-6">
                   {resume.sections.map((section) => (
                     <div key={section.id} className="mb-6">
-                      <h2 className="text-xl font-bold text-gray-900 mb-3 uppercase tracking-wide border-b border-gray-300 pb-1">
+                      <h2 className="text-xl font-bold text-black mb-3 uppercase tracking-wide border-b border-amber-300 pb-1">
                         {section.type}
                       </h2>
                       <div className="mb-4">
                         <div className="flex justify-between items-start mb-2">
                           <div>
-                            <h3 className="text-lg font-semibold text-gray-900">{section.title}</h3>
-                            {section.subtitle && <p className="text-base font-medium text-gray-700">{section.subtitle}</p>}
+                            <h3 className="text-lg font-semibold text-black">{section.title}</h3>
+                            {section.subtitle && <p className="text-base font-medium text-black">{section.subtitle}</p>}
                           </div>
-                          <div className="text-right text-sm text-gray-600">
+                          <div className="text-right text-sm text-black">
                             {(section.startDate || section.endDate) && <div>{section.startDate} - {section.endDate}</div>}
                             {section.location && <div className="mt-1">{section.location}</div>}
                           </div>
                         </div>
-                        <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{section.content}</div>
+                        <div className="text-sm text-black leading-relaxed whitespace-pre-wrap">{section.content}</div>
                       </div>
                     </div>
                   ))}
@@ -415,34 +439,38 @@ const ResumePageClient = () => {
               </div>
             ) : (
               <div className="grid grid-cols-[300px_1fr] gap-8">
+                {/* ... Edit Mode JSX ... (no changes here) */}
                 <div className="space-y-4">
-                  <div className="bg-white border border-neutral-200 rounded-lg overflow-hidden">
-                    <div className="p-4 border-b border-neutral-200">
-                      <h2 className="text-lg font-medium">Contact Information</h2>
+                  <div className="bg-white/60 backdrop-blur-sm border border-amber-200 rounded-lg shadow-sm">
+                    <div className="p-4 border-b border-amber-200 bg-amber-50/50">
+                      <h2 className="text-lg font-medium text-black">Contact Information</h2>
                     </div>
                     <div className="p-4">
                       {(Object.keys(resume.contact) as Array<keyof ResumeContact>).map((key) => (
                         <div key={key} className="mb-4 last:mb-0">
-                          <label className="block text-sm font-medium text-neutral-700 mb-1 capitalize">{key}</label>
+                          <label className="block text-sm font-medium text-black mb-1 capitalize">{key}</label>
                           <input
                             type="text"
                             value={resume.contact[key]}
                             onChange={(e) => setResume((prev) => ({ ...prev, contact: { ...prev.contact, [key]: e.target.value } }))}
-                            className="w-full px-3 py-2 border border-neutral-200 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-black focus:border-black text-sm"
+                            className="w-full px-3 py-2 border border-amber-200 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm bg-white/80 text-black"
                             placeholder={`Enter ${key}`}
                           />
                         </div>
                       ))}
                     </div>
                   </div>
-                  <button onClick={handleAddSection} className="w-full px-4 py-2 border border-neutral-200 rounded-lg text-sm font-medium hover:bg-neutral-50">
+                  <button
+                    onClick={handleAddSection}
+                    className="w-full px-4 py-2 bg-white/60 border border-amber-200 rounded-lg text-sm font-medium hover:bg-amber-50 transition-colors text-black"
+                  >
                     Add New Section
                   </button>
                 </div>
                 <div className="space-y-6">
                   {resume.sections.map((section, index) => (
-                    <div key={section.id} className="bg-white border border-neutral-200 rounded-lg overflow-hidden">
-                      <div className="p-4 border-b border-neutral-200 flex items-center justify-between">
+                    <div key={section.id} className="bg-white/60 backdrop-blur-sm border border-amber-200 rounded-lg shadow-sm">
+                      <div className="p-4 border-b border-amber-200 flex items-center justify-between bg-amber-50/50">
                         <select
                           value={section.type}
                           onChange={(e) => {
@@ -450,7 +478,7 @@ const ResumePageClient = () => {
                             newSections[index] = { ...newSections[index], type: e.target.value };
                             setResume((prev) => ({ ...prev, sections: newSections }));
                           }}
-                          className="text-sm font-medium bg-transparent border-0 focus:ring-0"
+                          className="text-sm font-medium bg-transparent border-0 focus:ring-0 text-black"
                         >
                           <option value="experience">Experience</option>
                           <option value="education">Education</option>
@@ -460,39 +488,99 @@ const ResumePageClient = () => {
                         </select>
                         <button
                           onClick={() => setResume((prev) => ({ ...prev, sections: prev.sections.filter((s) => s.id !== section.id) }))}
-                          className="text-sm text-neutral-500 hover:text-red-500"
+                          className="text-sm text-black hover:text-red-600 transition-colors"
                         >
                           Remove
                         </button>
                       </div>
                       <div className="p-4 space-y-4">
-                        <input type="text" value={section.title} onChange={(e) => { const newSections = [...resume.sections]; newSections[index] = { ...newSections[index], title: e.target.value }; setResume((prev) => ({ ...prev, sections: newSections })); }} className="w-full px-3 py-2 text-lg font-medium border-0 focus:ring-0 focus:outline-none" placeholder="Section Title" />
-                        <input type="text" value={section.subtitle || ""} onChange={(e) => { const newSections = [...resume.sections]; newSections[index] = { ...newSections[index], subtitle: e.target.value }; setResume((prev) => ({ ...prev, sections: newSections })); }} className="w-full px-3 py-2 text-sm text-neutral-500 border-0 focus:ring-0 focus:outline-none" placeholder="Subtitle (optional)" />
+                        <input
+                          type="text"
+                          value={section.title}
+                          onChange={(e) => {
+                            const newSections = [...resume.sections];
+                            newSections[index] = { ...newSections[index], title: e.target.value };
+                            setResume((prev) => ({ ...prev, sections: newSections }));
+                          }}
+                          className="w-full px-3 py-2 text-lg font-medium border-0 focus:ring-0 focus:outline-none bg-transparent text-black placeholder-gray-500"
+                          placeholder="Section Title"
+                        />
+                        <input
+                          type="text"
+                          value={section.subtitle || ""}
+                          onChange={(e) => {
+                            const newSections = [...resume.sections];
+                            newSections[index] = { ...newSections[index], subtitle: e.target.value };
+                            setResume((prev) => ({ ...prev, sections: newSections }));
+                          }}
+                          className="w-full px-3 py-2 text-sm border border-amber-200 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white/80 text-black placeholder-gray-500"
+                          placeholder="Subtitle (optional)"
+                        />
                         {(section.type === "experience" || section.type === "education") && (
                           <>
                             <div className="grid grid-cols-2 gap-4">
                               <div>
-                                <label className="block text-sm font-medium text-neutral-700 mb-1">Start Date</label>
-                                <input type="text" value={section.startDate || ""} onChange={(e) => { const newSections = [...resume.sections]; newSections[index] = { ...newSections[index], startDate: e.target.value }; setResume((prev) => ({ ...prev, sections: newSections })); }} className="w-full px-3 py-2 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-black focus:border-black" placeholder="MM/YYYY" />
+                                <label className="block text-sm font-medium text-black mb-1">Start Date</label>
+                                <input
+                                  type="text"
+                                  value={section.startDate || ""}
+                                  onChange={(e) => {
+                                    const newSections = [...resume.sections];
+                                    newSections[index] = { ...newSections[index], startDate: e.target.value };
+                                    setResume((prev) => ({ ...prev, sections: newSections }));
+                                  }}
+                                  className="w-full px-3 py-2 text-sm border border-amber-200 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white/80 text-black placeholder-gray-500"
+                                  placeholder="MM/YYYY"
+                                />
                               </div>
                               <div>
-                                <label className="block text-sm font-medium text-neutral-700 mb-1">End Date</label>
-                                <input type="text" value={section.endDate || ""} onChange={(e) => { const newSections = [...resume.sections]; newSections[index] = { ...newSections[index], endDate: e.target.value }; setResume((prev) => ({ ...prev, sections: newSections })); }} className="w-full px-3 py-2 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-black focus:border-black" placeholder="MM/YYYY or Present" />
+                                <label className="block text-sm font-medium text-black mb-1">End Date</label>
+                                <input
+                                  type="text"
+                                  value={section.endDate || ""}
+                                  onChange={(e) => {
+                                    const newSections = [...resume.sections];
+                                    newSections[index] = { ...newSections[index], endDate: e.target.value };
+                                    setResume((prev) => ({ ...prev, sections: newSections }));
+                                  }}
+                                  className="w-full px-3 py-2 text-sm border border-amber-200 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white/80 text-black placeholder-gray-500"
+                                  placeholder="MM/YYYY or Present"
+                                />
                               </div>
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-neutral-700 mb-1">Location</label>
-                              <input type="text" value={section.location || ""} onChange={(e) => { const newSections = [...resume.sections]; newSections[index] = { ...newSections[index], location: e.target.value }; setResume((prev) => ({ ...prev, sections: newSections })); }} className="w-full px-3 py-2 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-black focus:border-black" placeholder="City, State" />
+                              <label className="block text-sm font-medium text-black mb-1">Location</label>
+                              <input
+                                type="text"
+                                value={section.location || ""}
+                                onChange={(e) => {
+                                  const newSections = [...resume.sections];
+                                  newSections[index] = { ...newSections[index], location: e.target.value };
+                                  setResume((prev) => ({ ...prev, sections: newSections }));
+                                }}
+                                className="w-full px-3 py-2 text-sm border border-amber-200 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white/80 text-black placeholder-gray-500"
+                                placeholder="City, State"
+                              />
                             </div>
                           </>
                         )}
-                        <textarea value={section.content} onChange={(e) => { const newSections = [...resume.sections]; newSections[index] = { ...newSections[index], content: e.target.value }; setResume((prev) => ({ ...prev, sections: newSections })); }} rows={4} className="w-full px-3 py-2 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-black focus:border-black" placeholder="Enter section content..." />
+                        <textarea
+                          value={section.content}
+                          onChange={(e) => {
+                            const newSections = [...resume.sections];
+                            newSections[index] = { ...newSections[index], content: e.target.value };
+                            setResume((prev) => ({ ...prev, sections: newSections }));
+                          }}
+                          rows={4}
+                          className="w-full px-3 py-2 text-sm border border-amber-200 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white/80 text-black placeholder-gray-500"
+                          placeholder="Enter section content..."
+                        />
                       </div>
                     </div>
                   ))}
                   {resume.sections.length === 0 && (
-                    <div className="text-center py-12 border-2 border-dashed border-neutral-200 rounded-lg">
-                      <p className="text-neutral-500">Click &quot;Add New Section&quot; to begin building your resume</p>
+                    <div className="text-center py-12 border-2 border-dashed border-amber-300 rounded-lg bg-white/30">
+                      <p className="text-black">Click &quot;Add New Section&quot; to begin building your resume</p>
                     </div>
                   )}
                 </div>
@@ -500,102 +588,146 @@ const ResumePageClient = () => {
             )}
           </div>
         ) : ( // Analysis View
-          <div className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row gap-6"> {/* Adjusted for responsiveness */}
-            <div className="flex-1 bg-white rounded-lg shadow-md min-w-0"> {/* Added min-w-0 for flex child */}
-              <div className="p-6 border-b">
-                <h3 className="text-xl font-semibold">Resume Analysis</h3>
-                <p className="text-sm text-gray-500 mt-1">Click on highlighted text to view suggestions</p>
+          <div className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row gap-6">
+            <div className="flex-1 bg-white/60 backdrop-blur-sm border border-amber-200 rounded-lg shadow-sm min-w-0">
+              <div className="p-6 border-b border-amber-200 bg-amber-50/50">
+                <h3 className="text-xl font-semibold text-black">Resume Analysis</h3>
+                <p className="text-sm text-amber-700 mt-1">Click on highlighted text to view suggestions.</p>
               </div>
-              <div className="p-6 whitespace-pre-wrap overflow-x-auto"> {/* Added overflow-x-auto */}
+              <div className="p-6 whitespace-pre-wrap text-black">
+                {isProcessingAction && parsedContentForDisplay.length === 0 && (
+                    <div className="flex flex-col items-center justify-center h-64">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-700 mb-4"></div>
+                        <p className="text-amber-700">Analyzing your resume...</p>
+                    </div>
+                )}
+                {!isProcessingAction && parsedContentForDisplay.length === 0 && analysisResultText && (
+                  <p className="text-gray-600">Could not parse suggestions from the analyzed text. Displaying raw analysis: <br/> {analysisResultText}</p>
+                )}
+                {!isProcessingAction && parsedContentForDisplay.length === 0 && !analysisResultText && (
+                    <p className="text-gray-600 text-center py-10">Analysis will appear here once a resume is processed.</p>
+                )}
                 {parsedContentForDisplay.map((part, index) => {
                   if (part.type === "regular") {
                     return <span key={index}>{part.text}</span>;
                   }
                   const suggestion = part.suggestionId ? suggestionsMap[part.suggestionId] : null;
                   if (!suggestion) return <span key={index} className="text-red-500 italic">[Error displaying part]</span>;
-                  
-                  const displayClass = suggestion.accepted === undefined ? "bg-yellow-200" : suggestion.accepted ? "bg-green-200 text-green-800" : "bg-red-200 text-red-800 line-through";
-                  const ringClass = selectedSuggestionId === suggestion.id ? "ring-2 ring-blue-400" : "";
-                  
+
+                  let displayClass = "bg-yellow-200/70 border border-yellow-400 text-yellow-900"; // Default highlight
+                  if (suggestion.accepted === true) {
+                    displayClass = "bg-green-200/70 border border-green-400 text-green-900";
+                  } else if (suggestion.accepted === false) {
+                    displayClass = "bg-red-200/70 border border-red-400 text-red-900 line-through";
+                  }
+                  const ringClass = selectedSuggestionId === suggestion.id ? "ring-2 ring-amber-600" : "";
+
                   return (
                     <span
                       key={index}
                       onClick={() => setSelectedSuggestionId(suggestion.id)}
-                      className={`${displayClass} ${ringClass} px-1 py-0.5 rounded inline-block cursor-pointer hover:ring-2 hover:ring-blue-300`}
+                      className={`${displayClass} ${ringClass} px-1 py-0.5 rounded inline-block cursor-pointer hover:ring-2 hover:ring-amber-500`}
                     >
-                      {suggestion.accepted ? suggestion.suggestion : part.text /* Show original if rejected, suggestion if accepted */}
+                      {suggestion.accepted ? suggestion.suggestion : part.text}
                     </span>
                   );
                 })}
-                 {analysisResultText && parsedContentForDisplay.length === 0 && !isProcessingAction && (
-                  <p className="text-gray-500">Could not parse suggestions from the analyzed text. Displaying raw analysis: <br/> {analysisResultText}</p>
-                )}
               </div>
             </div>
 
-            <div className="w-full lg:w-80 space-y-4 flex-shrink-0"> {/* Adjusted for responsiveness */}
-              <div className="bg-white rounded-lg shadow-md h-fit sticky top-8">
-                <div className="p-4 border-b"><h4 className="font-medium">Suggestion Details</h4></div>
+            <div className="w-full lg:w-96 space-y-4 flex-shrink-0"> {/* Increased width for better layout */}
+              <div className="bg-white/60 backdrop-blur-sm border border-amber-200 rounded-lg shadow-sm h-fit sticky top-8">
+                <div className="p-4 border-b border-amber-200 bg-amber-50/50">
+                    <h4 className="font-medium text-black">Suggestion Details</h4>
+                </div>
                 {selectedSuggestionId && suggestionsMap[selectedSuggestionId] ? (
-                  <div className="p-4">
-                    <div className="space-y-4">
+                  <div className="p-4 text-black">
+                    <div className="space-y-3">
                       <div>
-                        <p className="text-sm font-medium text-gray-700">Original Text:</p>
-                        <p className="text-sm mt-1 bg-yellow-100 p-2 rounded border border-yellow-300">{suggestionsMap[selectedSuggestionId].original}</p>
+                        <p className="text-sm font-medium text-amber-800">Original Text:</p>
+                        <p className="text-sm mt-1 bg-yellow-100/80 p-2 rounded border border-yellow-300">{suggestionsMap[selectedSuggestionId].original}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-700">Suggestion:</p>
-                        <p className="text-sm mt-1 bg-blue-100 p-2 rounded border border-blue-300">{suggestionsMap[selectedSuggestionId].suggestion}</p>
+                        <p className="text-sm font-medium text-amber-800">Suggested Change:</p>
+                        <p className="text-sm mt-1 bg-amber-100/80 p-2 rounded border border-amber-300">{suggestionsMap[selectedSuggestionId].suggestion}</p>
                       </div>
                       {suggestionsMap[selectedSuggestionId].accepted === undefined && (
-                        <div className="flex gap-2 mt-4">
-                          <button onClick={() => handleSuggestionClick(selectedSuggestionId, true)} className="flex-1 text-sm px-3 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Accept</button>
-                          <button onClick={() => handleSuggestionClick(selectedSuggestionId, false)} className="flex-1 text-sm px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">Reject</button>
+                        <div className="flex gap-2 mt-3">
+                          <button onClick={() => handleSuggestionClick(selectedSuggestionId, true)} className="flex-1 text-sm px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">Accept</button>
+                          <button onClick={() => handleSuggestionClick(selectedSuggestionId, false)} className="flex-1 text-sm px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">Reject</button>
                         </div>
                       )}
+                       {suggestionsMap[selectedSuggestionId].accepted !== undefined && (
+                         <p className={`text-sm font-medium mt-3 p-2 rounded border ${suggestionsMap[selectedSuggestionId].accepted ? 'bg-green-100/80 border-green-300 text-green-700' : 'bg-red-100/80 border-red-300 text-red-700'}`}>
+                            {suggestionsMap[selectedSuggestionId].accepted ? "Suggestion Accepted" : "Suggestion Rejected"}
+                         </p>
+                       )}
                     </div>
                   </div>
                 ) : (
-                  <div className="p-4 text-sm text-gray-500 text-center">Click on a highlighted text to view and manage suggestions</div>
+                  <div className="p-4 text-sm text-center text-amber-700">Click on a highlighted text to view and manage suggestions.</div>
                 )}
-                <div className="p-4 border-t">
-                  <button onClick={triggerTransferToBuilder} disabled={isProcessingAction} className="w-full px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors">
-                    {isProcessingAction && view === 'analysis' ? ( // Be more specific for loading text
+                <div className="p-4 border-t border-amber-200">
+                  <button
+                    onClick={triggerTransferToBuilder}
+                    disabled={isProcessingAction}
+                    className="w-full px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-700 text-white rounded-lg hover:from-amber-700 hover:to-amber-800 disabled:from-amber-400 disabled:to-amber-500 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-sm"
+                    >
+                    {isProcessingAction && view === 'analysis' ? (
                       <div className="flex items-center justify-center"><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>Transferring...</div>
-                    ) : "Transfer to Builder"}
+                    ) : "Apply & Transfer to Builder"}
                   </button>
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow-md">
-                <div className="p-4 border-b flex items-center justify-between">
-                  <h4 className="font-medium">Resume Score</h4>
-                  <button onClick={triggerReanalyzeScore} disabled={isProcessingAction} className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors">
-                     {isProcessingAction && currentResumeScore === null ? ( 
+              <div className="bg-white/60 backdrop-blur-sm border border-amber-200 rounded-lg shadow-sm">
+                <div className="p-4 border-b border-amber-200 bg-amber-50/50 flex items-center justify-between">
+                  <h4 className="font-medium text-black">Resume Score</h4>
+                  <button
+                    onClick={triggerReanalyzeScore}
+                    disabled={isProcessingAction}
+                    className="px-3 py-1 text-sm bg-amber-500 text-white rounded hover:bg-amber-600 disabled:bg-amber-300 disabled:cursor-not-allowed transition-colors"
+                  >
+                     {isProcessingAction && currentResumeScore === null ? (
                       <div className="flex items-center"><div className="animate-spin rounded-full h-3 w-3 border-b border-white mr-1"></div>Scoring...</div>
-                     ) : "Reanalyze"}
+                     ) : "Reanalyze Score"}
                   </button>
                 </div>
-                {currentResumeScore && currentResumeScore.criteria && Array.isArray(currentResumeScore.criteria) ? (
-                  <div className="p-4">
-                    <div className="text-center mb-4">
-                      <div className="text-3xl font-bold text-blue-600">{currentResumeScore.overallScore}/100</div>
-                      <div className="text-sm text-gray-500">Overall Score</div>
+                {isProcessingAction && currentResumeScore === null && (
+                    <div className="p-4 text-center text-amber-700">
+                        <div className="flex items-center justify-center py-10">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600 mr-2"></div>
+                            Analyzing score...
+                        </div>
                     </div>
-                    <div className="space-y-4">
+                )}
+                {!isProcessingAction && currentResumeScore && currentResumeScore.criteria && Array.isArray(currentResumeScore.criteria) ? (
+                  <div className="p-4 text-black">
+                    <div className="text-center mb-4">
+                      <div className={`text-3xl font-bold ${currentResumeScore.overallScore >= 70 ? 'text-green-600' : currentResumeScore.overallScore >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>
+                        {currentResumeScore.overallScore}/100
+                      </div>
+                      <div className="text-sm text-amber-700">Overall Score</div>
+                    </div>
+                    <div className="space-y-3">
                       {currentResumeScore.criteria.map((criterion, index) => (
-                        <div key={index} className="border rounded-lg p-3">
-                          <div className="flex justify-between items-center mb-2">
-                            <h5 className="font-medium text-sm">{criterion.name}</h5>
-                            <span className="font-semibold text-blue-600">{criterion.score}/100</span>
+                        <div key={index} className="border border-amber-200 rounded-lg p-3 bg-white/50">
+                          <div className="flex justify-between items-center mb-1">
+                            <h5 className="font-medium text-sm text-amber-800">{criterion.name}</h5>
+                            <span className={`font-semibold ${criterion.score >= 70 ? 'text-green-600' : criterion.score >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>
+                              {criterion.score}/100
+                            </span>
                           </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-                            <div className="bg-blue-600 h-2 rounded-full transition-all duration-300" style={{ width: `${criterion.score}%` }}></div>
+                          <div className="w-full bg-amber-100 rounded-full h-2.5 mb-2">
+                            <div
+                                className={`h-2.5 rounded-full transition-all duration-300 ${criterion.score >= 70 ? 'bg-green-500' : criterion.score >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                                style={{ width: `${criterion.score}%` }}>
+                            </div>
                           </div>
-                          <p className="text-xs text-gray-600 mb-2">{criterion.feedback}</p>
-                          {criterion.improvements && Array.isArray(criterion.improvements) && (
+                          <p className="text-xs text-gray-700 mb-1">{criterion.feedback}</p>
+                          {criterion.improvements && Array.isArray(criterion.improvements) && criterion.improvements.length > 0 && (
                             <div className="text-xs">
-                              <strong>Improvements:</strong>
+                              <strong className="text-amber-700">Improvements:</strong>
                               <ul className="list-disc list-inside text-gray-600 mt-1">
                                 {criterion.improvements.map((improvement, idx) => <li key={idx}>{improvement}</li>)}
                               </ul>
@@ -606,15 +738,13 @@ const ResumePageClient = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="p-4 text-center text-gray-500">
-                    {isProcessingAction && currentResumeScore === null ? (
-                      <div className="flex items-center justify-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-2"></div>Analyzing score...</div>
-                    ) : (
-                      currentResumeScore && currentResumeScore.overallScore === 0 && (!currentResumeScore.criteria || currentResumeScore.criteria.length === 0)
+                  !isProcessingAction && (
+                    <div className="p-4 text-center text-sm text-amber-700">
+                      {currentResumeScore && currentResumeScore.overallScore === 0 && (!currentResumeScore.criteria || currentResumeScore.criteria.length === 0)
                       ? "Could not retrieve valid score details. Please try reanalyzing."
-                      : "Resume score will appear here after analysis."
-                    )}
-                  </div>
+                      : "Resume score will appear here after analysis."}
+                    </div>
+                  )
                 )}
               </div>
             </div>
@@ -622,22 +752,18 @@ const ResumePageClient = () => {
         )}
 
         {view === "analysis" && (
-          <button onClick={resetAnalysisView} className="fixed bottom-6 right-6 bg-blue-500 text-white rounded-full p-4 shadow-lg hover:bg-blue-600 transition-colors z-20"> {/* Added z-index */}
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
+          <button
+            onClick={resetAnalysisView}
+            title="Upload New or Start Fresh"
+            className="fixed bottom-6 right-6 bg-amber-600 text-white rounded-full p-3 shadow-lg hover:bg-amber-700 transition-colors z-20"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 13.5l3 3m0 0l3-3m-3 3v-6m1.06-4.19l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
             </svg>
           </button>
         )}
 
-        {isProcessingAction && ( // Single loading overlay
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-8 max-w-sm mx-4 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <h3 className="text-lg font-semibold mb-2">Processing Request...</h3>
-              <p className="text-gray-600">Please wait a moment.</p>
-            </div>
-          </div>
-        )}
+        {/* Removed the global loading overlay */}
       </div>
     </div>
   );
