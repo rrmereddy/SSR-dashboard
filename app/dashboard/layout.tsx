@@ -34,7 +34,7 @@ const DashboardLayout = ({ children } : { children: React.ReactNode }) => {
     </div>
   </div>
 </header>
-      <main className='flex-grow overflow-hidden'>{children}</main>
+      <main className='flex-grow overflow-y-auto'>{children}</main>
       {/* Navigation Bar (Footer) */}
       <AppleStyleDock />
     </div>
