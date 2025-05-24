@@ -10,7 +10,7 @@ import LogoutButton from '@/components/LogoutButton';
 
 const DashboardLayout = ({ children } : { children: React.ReactNode }) => {
   return (
-    <div>
+    <div className='h-screen w-full flex flex-col'>
     {/* Top Navigation Bar */}
       <header className="bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-200/50 py-3 px-6 flex items-center justify-between shadow-sm">
   <div className="flex items-center">
@@ -34,7 +34,7 @@ const DashboardLayout = ({ children } : { children: React.ReactNode }) => {
     </div>
   </div>
 </header>
-      <main>{children}</main>
+      <main className='flex-grow overflow-hidden'>{children}</main>
       {/* Navigation Bar (Footer) */}
       <AppleStyleDock />
     </div>

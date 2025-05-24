@@ -141,7 +141,7 @@ const Resume = () => {
       const pdfContent = await readPDFContent(pdfFile);
 
       const genAI = new GoogleGenerativeAI(
-        "AIzaSyDJwn0eXDfrWid2ocNycrFs6LaUya_StfY"
+        process.env.NEXT_PUBLIC_GEMINI_API_KEY || ""
       );
       const model = genAI.getGenerativeModel({
         model: "gemini-2.0-flash",
