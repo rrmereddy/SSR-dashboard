@@ -13,7 +13,7 @@ export async function handleLoginPassword(
   email: string,
   password: string
 ): Promise<{ error: AuthError | null }> {
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
   return { error };
 }
 
@@ -23,7 +23,7 @@ export const handleSignUp = async (
   setErrorMsg: (msg: string) => void
 ) => {
   try {
-    const { data, error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email,
       password,
     });

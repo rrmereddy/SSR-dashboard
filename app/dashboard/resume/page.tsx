@@ -71,7 +71,7 @@ const ResumePageClient = () => {
     const parts: ParsedContent[] = [];
     const newSuggestions: Record<string, Suggestion> = {};
     let currentIndex = 0;
-    const regex = /\[([\s\S]*?)\]{([\s\S]*?)}/g;
+    const regex = /\[([\s\S]*?){([\s\S]*?)}/g;
     let lastIndex = 0;
     let match;
 
@@ -126,7 +126,7 @@ const ResumePageClient = () => {
           setCurrentResumeScore(result.resumeScore);
           setView("analysis");
         } else {
-          throw new Error("Invalid response structure from server.");
+            new Error("Invalid response structure from server.");
         }
       } catch (err: unknown) {
         console.error("Client: Error in handleResumeUploadAndAnalyze:", err);
@@ -253,7 +253,7 @@ const ResumePageClient = () => {
           setResume(structuredResume);
           setView("builder");
         } else {
-          throw new Error("Invalid resume structure from server.");
+          new Error("Invalid resume structure from server.");
         }
       } catch (err: unknown) {
         console.error("Client: Error in handleTransferToBuilder:", err);
@@ -319,12 +319,11 @@ const ResumePageClient = () => {
 
         if (
           newScore &&
-          typeof newScore.overallScore === "number" &&
           Array.isArray(newScore.criteria)
         ) {
           setCurrentResumeScore(newScore);
         } else {
-          throw new Error("Invalid score structure from server.");
+           new Error("Invalid score structure from server.");
         }
       } catch (err: unknown) {
         console.error("Client: Error in handleAnalyzeResumeScore:", err);
