@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SSR Dashboard
 
-## Getting Started
+A smart, server-first job dashboard built for the hackathon!  
+This project leverages modern web technologies to provide a seamless experience for resume analysis, job tracking, and collaborative features.
 
-First, run the development server:
+## 🚀 Project Overview
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+SSR Dashboard is designed to help users:
+- **Upload and analyze resumes** using AI for instant feedback and suggestions.
+- **Build and edit resumes** interactively.
+- **Track coding progress** (e.g., LeetCode) and GitHub activity.
+- **Collaborate and chat** with team members in real time.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ✨ Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **AI Resume Analysis:** Upload your PDF resume and get instant, actionable feedback powered by server-side AI.
+- **Resume Builder:** Edit, enhance, and export your resume directly from the dashboard.
+- **Job & Coding Tracker:** Visualize your GitHub and LeetCode progress.
+- **Collaboration Tools:** Real-time chat and collaboration features (in progress).
+- **Modern UI:** Built with reusable components and a clean, responsive design.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🛠️ Technologies Used
 
-## Learn More
+- **Next.js 15** (App Router, Server Components)
+- **React 19**
+- **Tailwind CSS** (with custom themes)
+- **Supabase** (authentication & database)
+- **AI/ML:** Google Generative AI for resume analysis
+- **PDF Processing:** `pdf-parse`, `html2canvas`, `jspdf`
+- **Radix UI** (for accessible UI components)
+- **TypeScript** (type safety)
+- **Other:** Sonner, Lucide React, and more
 
-To learn more about Next.js, take a look at the following resources:
+## 🏁 Getting Started
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+2. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📂 Project Structure
 
-## Deploy on Vercel
+- `/app` - Main application (pages, dashboard, auth, resume)
+- `/components` - Reusable UI components
+- `/server` - Server-side logic (resume analysis, etc.)
+- `/lib` - Utility functions and API clients
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🎯 Focus Areas
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Streaming & Partial Rendering**
+- **Smart Server Logic**
+- **External API Integration**
+- **Community Collaboration**
+
+## 🏆 Prize Tracks
+
+- Best use of streaming
+- Most innovative UI/UX
+- Best API integration
+- Community favorite
+
+## 👥 Team & Presentation
+
+- Working demo included
+- 3-5 minute presentation ready
+- This README describes the project and technologies used
