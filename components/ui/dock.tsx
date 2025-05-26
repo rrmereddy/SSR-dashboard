@@ -20,6 +20,7 @@ import {
   useState,
 } from 'react';
 import { cn } from '@/lib/utils';
+import React from 'react';
 
 const DOCK_HEIGHT = 128;
 const DEFAULT_MAGNIFICATION = 80;
@@ -75,6 +76,8 @@ function useDock() {
   }
   return context;
 }
+
+type DockInjectedProps = { width: MotionValue<number>; isHovered: MotionValue<number> };
 
 function Dock({
   children,
@@ -164,7 +167,9 @@ function DockItem({ children, className }: DockItemProps) {
       aria-haspopup='true'
     >
       {Children.map(children, (child) =>
-        cloneElement(child as React.ReactElement, { width, isHovered })
+        React.isValidElement(child)
+          ? cloneElement(child, { width, isHovered } as DockInjectedProps)
+          : child
       )}
     </motion.div>
   );
