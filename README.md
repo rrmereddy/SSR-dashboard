@@ -43,6 +43,13 @@ SSR Dashboard is designed to help users:
    ```
 3. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+## 📦 Live Demo
+
+The project is deployed on Vercel:
+👉 [https://ssr-dashboard.vercel.app/](https://ssr-dashboard.vercel.app/)
+
+**⚠️ Note:** The resume analyzer uses the Gemini API, which has usage limits. Please be mindful of these limits when uploading and analyzing resumes.
+
 ## 📂 Project Structure
 
 - `/app` - Main application (pages, dashboard, auth, resume)
