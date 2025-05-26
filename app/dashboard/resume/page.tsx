@@ -806,160 +806,210 @@ const ResumePageClient = () => {
                   )}
               </div>
             </div>
-            <div className="w-full lg:w-80 space-y-4 flex-shrink-0">
+            <div className="w-full lg:w-96 space-y-4 flex-shrink-0">
               {" "}
               {/* Adjusted for responsiveness */}
-              <div className="bg-white rounded-lg shadow-md h-fit sticky top-8">
-                <div className="p-4 border-b">
-                  <h4 className="font-medium">Suggestion Details</h4>
-                </div>
-                {selectedSuggestionId &&
-                suggestionsMap[selectedSuggestionId] ? (
-                  <div className="p-4">
-                    <div className="space-y-4">
-                      <div>
-                        <p className="text-sm font-medium text-gray-700">
-                          Original Text:
-                        </p>
-                        <p className="text-sm mt-1 bg-yellow-100 p-2 rounded border border-yellow-300">
-                          {suggestionsMap[selectedSuggestionId].original}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-700">
-                          Suggestion:
-                        </p>
-                        <p className="text-sm mt-1 bg-blue-100 p-2 rounded border border-blue-300">
-                          {suggestionsMap[selectedSuggestionId].suggestion}
-                        </p>
-                      </div>
-                      {suggestionsMap[selectedSuggestionId].accepted ===
-                        undefined && (
-                        <div className="flex gap-2 mt-4">
-                          <button
-                            onClick={() =>
-                              handleSuggestionClick(selectedSuggestionId, true)
-                            }
-                            className="flex-1 text-sm px-3 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
-                          >
-                            Accept
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleSuggestionClick(selectedSuggestionId, false)
-                            }
-                            className="flex-1 text-sm px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
-                          >
-                            Reject
-                          </button>
+              {/* Combined sticky container for both cards */}
+              <div className="sticky top-4 space-y-4 z-10">
+                {/* Suggestion Details Card - Collapsible */}
+                <div className="bg-white rounded-lg shadow-lg border overflow-hidden">
+                  <div
+                    className="p-3 border-b bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors flex items-center justify-between"
+                    onClick={() =>
+                      setSelectedSuggestionId(
+                        selectedSuggestionId ? null : "toggle"
+                      )
+                    }
+                  >
+                    <h4 className="font-semibold text-gray-800 text-sm">
+                      💡 Suggestion Details
+                    </h4>
+                    <div className="flex items-center space-x-2">
+                      {selectedSuggestionId &&
+                        suggestionsMap[selectedSuggestionId] && (
+                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                            Active
+                          </span>
+                        )}
+                      <svg
+                        className={`w-4 h-4 transition-transform ${
+                          selectedSuggestionId ? "rotate-180" : ""
+                        }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+
+                  {selectedSuggestionId &&
+                  suggestionsMap[selectedSuggestionId] ? (
+                    <div className="p-3">
+                      <div className="space-y-3">
+                        <div>
+                          <p className="text-xs font-medium text-gray-700 mb-1">
+                            Original Text:
+                          </p>
+                          <p className="text-xs bg-yellow-50 p-2 rounded border border-yellow-200 leading-relaxed">
+                            {suggestionsMap[selectedSuggestionId].original}
+                          </p>
                         </div>
+                        <div>
+                          <p className="text-xs font-medium text-gray-700 mb-1">
+                            Suggestion:
+                          </p>
+                          <p className="text-xs bg-blue-50 p-2 rounded border border-blue-200 leading-relaxed">
+                            {suggestionsMap[selectedSuggestionId].suggestion}
+                          </p>
+                        </div>
+                        {suggestionsMap[selectedSuggestionId].accepted ===
+                          undefined && (
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() =>
+                                handleSuggestionClick(
+                                  selectedSuggestionId,
+                                  true
+                                )
+                              }
+                              className="flex-1 text-xs px-2 py-1.5 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+                            >
+                              ✓ Accept
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleSuggestionClick(
+                                  selectedSuggestionId,
+                                  false
+                                )
+                              }
+                              className="flex-1 text-xs px-2 py-1.5 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                            >
+                              ✗ Reject
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-3 text-xs text-gray-500 text-center bg-gray-25">
+                      Click on highlighted text to view suggestions
+                    </div>
+                  )}
+
+                  <div className="p-3 border-t bg-gray-50">
+                    <button
+                      onClick={triggerTransferToBuilder}
+                      disabled={isProcessingAction}
+                      className="w-full px-3 py-2 text-xs bg-black text-white rounded hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {isProcessingAction && view === "analysis" ? (
+                        <div className="flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2"></div>
+                          Transferring...
+                        </div>
+                      ) : (
+                        "📝 Transfer to Builder"
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Resume Score Card - Compact */}
+                <div className="bg-white rounded-lg shadow-lg border">
+                  <div className="p-3 border-b bg-blue-50 flex items-center justify-between">
+                    <h4 className="font-semibold text-gray-800 text-sm">
+                      📊 Resume Score
+                    </h4>
+                    <button
+                      onClick={triggerReanalyzeScore}
+                      disabled={isProcessingAction}
+                      className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {isProcessingAction && currentResumeScore === null ? (
+                        <div className="flex items-center">
+                          <div className="animate-spin rounded-full h-3 w-3 border-b border-white mr-1"></div>
+                          Scoring...
+                        </div>
+                      ) : (
+                        "Reanalyze"
+                      )}
+                    </button>
+                  </div>
+                  {currentResumeScore &&
+                  currentResumeScore.criteria &&
+                  Array.isArray(currentResumeScore.criteria) ? (
+                    <div className="p-4">
+                      <div className="text-center mb-4">
+                        <div className="text-3xl font-bold text-blue-600">
+                          {currentResumeScore.overallScore}/100
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          Overall Score
+                        </div>
+                      </div>
+                      <div className="space-y-4">
+                        {currentResumeScore.criteria.map((criterion, index) => (
+                          <div key={index} className="border rounded-lg p-3">
+                            <div className="flex justify-between items-center mb-2">
+                              <h5 className="font-medium text-sm">
+                                {criterion.name}
+                              </h5>
+                              <span className="font-semibold text-blue-600">
+                                {criterion.score}/100
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+                              <div
+                                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                                style={{ width: `${criterion.score}%` }}
+                              ></div>
+                            </div>
+                            <p className="text-xs text-gray-600 mb-2">
+                              {criterion.feedback}
+                            </p>
+                            {criterion.improvements &&
+                              Array.isArray(criterion.improvements) && (
+                                <div className="text-xs">
+                                  <strong>Improvements:</strong>
+                                  <ul className="list-disc list-inside text-gray-600 mt-1">
+                                    {criterion.improvements.map(
+                                      (improvement, idx) => (
+                                        <li key={idx}>{improvement}</li>
+                                      )
+                                    )}
+                                  </ul>
+                                </div>
+                              )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-4 text-center text-gray-500">
+                      {isProcessingAction && currentResumeScore === null ? (
+                        <div className="flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-2"></div>
+                          Analyzing score...
+                        </div>
+                      ) : currentResumeScore &&
+                        currentResumeScore.overallScore === 0 &&
+                        (!currentResumeScore.criteria ||
+                          currentResumeScore.criteria.length === 0) ? (
+                        "Could not retrieve valid score details. Please try reanalyzing."
+                      ) : (
+                        "Resume score will appear here after analysis."
                       )}
                     </div>
-                  </div>
-                ) : (
-                  <div className="p-4 text-sm text-gray-500 text-center">
-                    Click on a highlighted text to view and manage suggestions
-                  </div>
-                )}
-                <div className="p-4 border-t">
-                  <button
-                    onClick={triggerTransferToBuilder}
-                    disabled={isProcessingAction}
-                    className="w-full px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-                  >
-                    {isProcessingAction && view === "analysis" ? ( // Be more specific for loading text
-                      <div className="flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Transferring...
-                      </div>
-                    ) : (
-                      "Transfer to Builder"
-                    )}
-                  </button>
+                  )}
                 </div>
-              </div>
-              <div className="bg-white rounded-lg shadow-md">
-                <div className="p-4 border-b flex items-center justify-between">
-                  <h4 className="font-medium">Resume Score</h4>
-                  <button
-                    onClick={triggerReanalyzeScore}
-                    disabled={isProcessingAction}
-                    className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-                  >
-                    {isProcessingAction && currentResumeScore === null ? (
-                      <div className="flex items-center">
-                        <div className="animate-spin rounded-full h-3 w-3 border-b border-white mr-1"></div>
-                        Scoring...
-                      </div>
-                    ) : (
-                      "Reanalyze"
-                    )}
-                  </button>
-                </div>
-                {currentResumeScore &&
-                currentResumeScore.criteria &&
-                Array.isArray(currentResumeScore.criteria) ? (
-                  <div className="p-4">
-                    <div className="text-center mb-4">
-                      <div className="text-3xl font-bold text-blue-600">
-                        {currentResumeScore.overallScore}/100
-                      </div>
-                      <div className="text-sm text-gray-500">Overall Score</div>
-                    </div>
-                    <div className="space-y-4">
-                      {currentResumeScore.criteria.map((criterion, index) => (
-                        <div key={index} className="border rounded-lg p-3">
-                          <div className="flex justify-between items-center mb-2">
-                            <h5 className="font-medium text-sm">
-                              {criterion.name}
-                            </h5>
-                            <span className="font-semibold text-blue-600">
-                              {criterion.score}/100
-                            </span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-                            <div
-                              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                              style={{ width: `${criterion.score}%` }}
-                            ></div>
-                          </div>
-                          <p className="text-xs text-gray-600 mb-2">
-                            {criterion.feedback}
-                          </p>
-                          {criterion.improvements &&
-                            Array.isArray(criterion.improvements) && (
-                              <div className="text-xs">
-                                <strong>Improvements:</strong>
-                                <ul className="list-disc list-inside text-gray-600 mt-1">
-                                  {criterion.improvements.map(
-                                    (improvement, idx) => (
-                                      <li key={idx}>{improvement}</li>
-                                    )
-                                  )}
-                                </ul>
-                              </div>
-                            )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-4 text-center text-gray-500">
-                    {isProcessingAction && currentResumeScore === null ? (
-                      <div className="flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-2"></div>
-                        Analyzing score...
-                      </div>
-                    ) : currentResumeScore &&
-                      currentResumeScore.overallScore === 0 &&
-                      (!currentResumeScore.criteria ||
-                        currentResumeScore.criteria.length === 0) ? (
-                      "Could not retrieve valid score details. Please try reanalyzing."
-                    ) : (
-                      "Resume score will appear here after analysis."
-                    )}
-                  </div>
-                )}
               </div>
             </div>
           </div>

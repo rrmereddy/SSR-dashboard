@@ -125,7 +125,56 @@ Guidelines:
   const analyzedText = await callGemini(analysisPrompt, pdfContent);
   const { parts, suggestionsObject } = parseSuggestionsFromAnalyzedText(analyzedText);
 
-  const scoringPrompt = `You are a professional HR manager and resume expert... RESPOND WITH ONLY THE JSON OBJECT - NO OTHER TEXT:`; // Your full scoring prompt from page.tsx
+  const scoringPrompt = `You are a professional HR manager and resume expert. Analyze this resume and provide a comprehensive score based on key criteria. 
+
+Rate the resume on a scale of 0-100 for each criterion and provide specific feedback and improvements.
+
+RESPOND WITH ONLY THE JSON OBJECT - NO OTHER TEXT:
+
+{
+  "overallScore": number,
+  "criteria": [
+    {
+      "name": "Content Quality",
+      "score": number,
+      "feedback": "string",
+      "improvements": ["string", "string"]
+    },
+    {
+      "name": "Formatting & Structure", 
+      "score": number,
+      "feedback": "string",
+      "improvements": ["string", "string"]
+    },
+    {
+      "name": "Professional Impact",
+      "score": number,
+      "feedback": "string", 
+      "improvements": ["string", "string"]
+    },
+    {
+      "name": "Keyword Optimization",
+      "score": number,
+      "feedback": "string",
+      "improvements": ["string", "string"]
+    },
+    {
+      "name": "Completeness",
+      "score": number,
+      "feedback": "string",
+      "improvements": ["string", "string"]
+    }
+  ]
+}
+
+Scoring Guidelines:
+- Content Quality (0-100): Clarity, relevance, and impact of achievements
+- Formatting & Structure (0-100): Professional layout, consistency, readability
+- Professional Impact (0-100): Use of action verbs, quantified results, industry relevance
+- Keyword Optimization (0-100): Inclusion of relevant industry keywords and skills
+- Completeness (0-100): All necessary sections present and well-developed
+
+Calculate overallScore as the average of all criteria scores.`;
   const scoreJsonResponse = await callGemini(scoringPrompt, analyzedText); // Score based on the AI-analyzed text
   let resumeScore: ResumeScore | null = null;
   try {
@@ -173,7 +222,56 @@ ${resumeText}`;
 }
 
 export async function handleAnalyzeResumeScore(resumeText: string): Promise<ResumeScore> {
-    const scoringPrompt = `You are a professional HR manager and resume expert... RESPOND WITH ONLY THE JSON OBJECT - NO OTHER TEXT:`;
+    const scoringPrompt = `You are a professional HR manager and resume expert. Analyze this resume and provide a comprehensive score based on key criteria. 
+
+Rate the resume on a scale of 0-100 for each criterion and provide specific feedback and improvements.
+
+RESPOND WITH ONLY THE JSON OBJECT - NO OTHER TEXT:
+
+{
+  "overallScore": number,
+  "criteria": [
+    {
+      "name": "Content Quality",
+      "score": number,
+      "feedback": "string",
+      "improvements": ["string", "string"]
+    },
+    {
+      "name": "Formatting & Structure", 
+      "score": number,
+      "feedback": "string",
+      "improvements": ["string", "string"]
+    },
+    {
+      "name": "Professional Impact",
+      "score": number,
+      "feedback": "string", 
+      "improvements": ["string", "string"]
+    },
+    {
+      "name": "Keyword Optimization",
+      "score": number,
+      "feedback": "string",
+      "improvements": ["string", "string"]
+    },
+    {
+      "name": "Completeness",
+      "score": number,
+      "feedback": "string",
+      "improvements": ["string", "string"]
+    }
+  ]
+}
+
+Scoring Guidelines:
+- Content Quality (0-100): Clarity, relevance, and impact of achievements
+- Formatting & Structure (0-100): Professional layout, consistency, readability
+- Professional Impact (0-100): Use of action verbs, quantified results, industry relevance
+- Keyword Optimization (0-100): Inclusion of relevant industry keywords and skills
+- Completeness (0-100): All necessary sections present and well-developed
+
+Calculate overallScore as the average of all criteria scores.`;
     const jsonResponse = await callGemini(scoringPrompt, resumeText);
      try {
         const parsedScoreData = cleanJsonResponse(jsonResponse);
